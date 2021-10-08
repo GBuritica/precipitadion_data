@@ -82,7 +82,7 @@ sample     <- na.omit(sample); n      <- length(sample[,1] )
 sample0    <- sample
 
 
-par(mfrow=c(3,1))
+par(mfrow=c(1,3))
 for(N in 1:1){
 n <- 4000
 kp <- n^0.9
