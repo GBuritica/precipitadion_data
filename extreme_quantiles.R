@@ -4,8 +4,8 @@ library(extRemes)
 library(evd)
 library(latex2exp)
 
-par(mfrow=c(3,3))
 
+par(mfrow=c(3,3))
 bu0<- c(165,105,70)
 kp0 <- c(350,250,350)
 ville <- c("BREST", "LANVEOC", "QUIMPER", "BORMES", "LE.LUC", "HYERES", "NANCY", "METZ", "ROVILLE")
@@ -36,13 +36,13 @@ for(i in 1:3){
     sortedsuma <- sort(sumaalpha, decreasing=T)
     
     ## A
-    ymax <- length(sortedsuma)
-    quantiles <-  rbind( quantiles, (sortedsuma[1:ymax])^(1/alpha))
+    ymax       <- length(sortedsuma)
+    quantiles  <-  rbind( quantiles, (sortedsuma[1:ymax])^(1/alpha))
     quantiles3 <- rbind(quantiles3, sorted[1:ymax] )
     
-    plot(quantiles3[1,], quantiles[1,],pch=16,cex=.8, xlab = "sample",ylab=TeX('$\\alpha$ - norm') , main = region[i] )
+    plot(quantiles3[1,], quantiles[1,],pch=1,cex=1, xlab = "sample",ylab=TeX('$\\alpha$ - norm') , main = region[i] )
     mtext(ville[(i-1)*3 + ind] , cex =.8)
-    abline(0,1, col="grey")
+    abline(0,1, col="grey", lty=2)
     
     
     ## Repeats for the norm
@@ -74,7 +74,206 @@ for(i in 1:3){
   }
 }
 
+par(mfrow=c(2,3))
 
+ylim0 <- xlim0 <- c(38,88)
+ylim0 <- xlim0 <- c(73,180)
+ylim0 <- xlim0 <- c(25,100)
+for(i in 3){
+  
+  bu<- bu0[i]
+  kp<- kp0[i]
+  j <- 3
+  #sample0  <-  mARMAX1(al=4,par0=c(0.7,0.8,0.8),n0=n,dep0=0.9,d0=3)
+  
+  sample0     <- na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
+  sample0     <- na.omit(sample0); n      <- length(sample0[,1] )
+  sample     <- sapply(1:n, function(k) max(sample0[k, ]) )
+  records    <- sort(sample, decreasing=T)
+  
+  alpha      <-   1/alphaestimator(sample,k1=kp)$xi
+  sumaalpha  <- sapply(1:floor(n/bu), function(k) sum(sample[((k-1)*bu + 1):(k*bu) ]^alpha) )
+  ymax       <- length(sumaalpha)
+  #mat        <- stableconfintervals(sumaalpha,alpha,ymax*1/min(moments))
+  
+
+  ind        <- which(sample > records[floor(n*0.05) ] )
+  moments    <- sapply(1:3, function(d) mean( (sample0[ind,d]/sample[ind])^alpha ) )
+  print(moments)
+  
+  for(ind in 1:3){
+    ## Creates sample
+    sample     <- na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
+    sample     <- na.omit(sample); n      <- length(sample[,1] )
+    sample     <- sapply(1:n, function(k) max(sample[k, ind]) )
+    
+    ## Computes index of regular variation 
+    alpha0      <-   1/alphaestimator(sample,k1=kp)$xi
+    if(alpha0 < 0) alpha0 <- 10
+    
+    ## Creates suma - max samples
+    sumaalpha0  <- sapply(1:floor(n/bu), function(k) sum(sample[((k-1)*bu + 1):(k*bu) ]^alpha0) )
+    sorted      <-  sort(sample,decreasing=T)
+    mat0        <- stableconfintervals(sumaalpha0,alpha0)
+    ## Sorted
+    
+    
+    ## A
+    ymax       <- length(sumaalpha0)
+    quantiles  <-  mat0[,2]
+    quantiles3 <-  rev(sorted[1:ymax]) 
+    quantiles4 <-  rev(sorted[1:ymax]) 
+    #plot(NA,NA,pch=1,cex=1, xlab = "observations",ylab=TeX('$1/\\widehat{\\alpha}^n$ - stable quantiles'), main = region[i], ylim =ylim0,xlim = xlim0 )
+    #polygon( x=c( quantiles4[1:ymax], rev(quantiles4[1:ymax]) ), y=c(  mat0[,1]^(1/alpha0), rev( mat0[,3]^(1/alpha0)) ), density=20, col = "lightblue" , angle = 90)
+    #points(quantiles4, quantiles, col = 1, pch=1, cex=1)
+    #abline(0,1, lty=2, col = "grey")
+    #mtext("univariate", cex=0.8)
+   
+    
+    sample0     <- na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
+    sample0     <- na.omit(sample0); n      <- length(sample0[,1] )
+    sample     <- sapply(1:n, function(k) max(sample0[k, ]) )
+    
+    mom        <- moments[ind]
+    mat        <- stableconfintervals(sumaalpha,alpha,mom)
+    
+  
+   quantiles2 <- sapply(1:floor(ymax*mom), function(k) mat[k,2])
+   ymax2       <- length(quantiles2)
+   quantiles3 <-  rev(sorted[1:ymax2]) 
+   
+   plot(NA,NA,pch=1,cex=1, xlab = "observations",ylab=TeX('$1/\\widehat{\\alpha}^n$ - stable quantiles') , main = region[i], ylim =ylim0,xlim = xlim0 )
+   points(quantiles4, quantiles, col = "grey", pch=1, cex=1)
+   lines(quantiles4, mat0[,1], col="lightgrey",lty=3);lines(quantiles4, mat0[,3], col = "lightgrey",lty=3)
+   
+   #polygon( x=c( quantiles3[1:ymax2], rev(quantiles3[1:ymax2]) ), y=c( sapply(1:floor(ymax*mom), function(k) mat[k,1])
+    #                                                                  , rev(sapply(1:floor(ymax*mom), function(k)  mat[k,3] ))), density=20, col = "lightblue" , angle = 90)
+   points(quantiles3, quantiles2, type="p" ,cex=1, pch=1)
+   lines(quantiles3, mat[,1],lty=3);lines(quantiles3, mat[,3], lty=3)
+   
+   abline(0,1,lty=2, col = "grey")
+   mtext(ville[(i-1)*3 + ind], cex=0.8)
+  }
+  
+  
+}
+
+
+
+
+#################################################################
+#################################################################
+## mARMAX
+msample0  <-  mARMAX1(al=4,par0=c(0.7,0.7,0.7),n0=8000,dep0=0.1,d0=3); n <- 8000
+RP <- c(5,20,50)       ## period of years.
+k0 <- c(350,floor(n^0.9))     ## k parameters to compute
+sample        <- msample0
+sample         <- na.omit(sample); n          <- length(sample[,1] )
+sample        <- sapply(1:n, function(k) max(sample[k,]) )
+infostat      <- stable_return_level(RP,k0,sample)
+infoclassical   <- classical_return_level(RP,k0,sample)
+ylim1           <- c(0,50)
+s               <- 3   ## Fix RP
+par(mfrow=c(1,3));plot_ci(infostat,infoclassical,real=real)
+
+bu0<- c(40)
+kp0 <- floor(n^0.9)
+ylim0 <- xlim0 <- c(0,15)
+par(mfrow=c(1,3))
+for(i in 1){
+  
+  bu<- bu0[i]
+  kp<- kp0[i]
+  j <- 3
+  #sample0  <-  mARMAX1(al=4,par0=c(0.7,0.8,0.8),n0=n,dep0=0.9,d0=3)
+  
+  sample0     <- msample0#na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
+  sample0     <- na.omit(sample0); n      <- length(sample0[,1] )
+  sample     <- sapply(1:n, function(k) max(sample0[k, ]) )
+  records    <- sort(sample, decreasing=T)
+  
+  alpha <-   1/alphaestimator(sample,k1=kp)$xi
+  sumaalpha  <- sapply(1:floor(n/bu), function(k) sum(sample[((k-1)*bu + 1):(k*bu) ]^alpha) )
+  ymax       <- length(sumaalpha)
+  #mat        <- stableconfintervals(sumaalpha,alpha,ymax*1/min(moments))
+  
+  
+  ind        <- which(sample > records[floor(n*0.05) ] )
+  moments    <- sapply(1:3, function(d) mean( (sample0[ind,d]/sample[ind])^alpha ) )
+  print(moments)
+  
+  for(ind in 1:3){
+    ## Creates sample
+    sample     <- msample0#na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
+    sample     <- na.omit(sample); n      <- length(sample[,1] )
+    sample     <- sapply(1:n, function(k) max(sample[k, ind]) )
+    
+    ## Computes index of regular variation 
+    alpha0      <-   1/alphaestimator(sample,k1=kp)$xi
+    if(alpha0 < 0) alpha0 <- 10
+    
+    ## Creates suma - max samples
+    sumaalpha0  <- sapply(1:floor(n/bu), function(k) sum(sample[((k-1)*bu + 1):(k*bu) ]^alpha0) )
+    #mat0        <- stableconfintervals(sumaalpha0,alpha0)
+    ## Sorted
+    sorted     <- sort(sample,decreasing=T)
+
+    sample0     <- na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
+    sample0     <- na.omit(sample0); n      <- length(sample0[,1] )
+    sample     <- sapply(1:n, function(k) max(sample0[k, ]) )
+    
+    mom        <- moments[ind]
+    mat        <- stableconfintervals(sumaalpha,alpha,mom)
+    
+    
+    quantiles2 <- sapply(1:floor(ymax*mom), function(k) mat[k,2])
+    ymax2       <- length(quantiles2)
+    quantiles3 <-  rev(sorted[1:ymax2]) 
+    
+    plot(NA,NA,pch=1,cex=1, xlab = "observations",ylab=TeX('$1/\\widehat{\\alpha}^n$ - stable quantiles') , main = region[i], ylim =ylim0,xlim = xlim0 )
+    polygon( x=c( quantiles3[1:ymax2], rev(quantiles3[1:ymax2]) ), y=c( sapply(1:floor(ymax*mom), function(k) mat[k,1])
+                                                                        , rev(sapply(1:floor(ymax*mom), function(k)  mat[k,3] ))), density=20, col = "lightblue" , angle = 90)
+    points(quantiles3, quantiles2, type="p" ,cex=1, pch=1)
+    # lines(quantiles3,sapply(1:floor(ymax*mom), function(k) mat[(floor(k/mom)),1]),lty=2,col=1)
+    #lines(quantiles3,sapply(1:floor(ymax*mom), function(k) mat[(floor(k/mom)+1),3]),lty=2,col=1)
+    abline(0,1,lty=2, col = "grey")
+    mtext(ville[(i-1)*3 + ind], cex=0.8)
+  }
+  
+  
+}
+
+
+
+
+stableconfintervals <- function(sumaalpha,alpha,mom=1){
+  
+  n2               <- length(sumaalpha)
+  bb               <- stable.fit.mle.restricted(sumaalpha, c(1,1,0,0), c(1,1,0,0))
+  qb               <- qstable( rev(1- (((1:floor(mom*(n/bu)) ))/((n/bu)*mom))) , alpha=bb[1], beta=bb[2], gamma=bb[3], delta=bb[4] ) ## quantiles
+  qb               <- sign(qb)*abs(qb)^(1/alpha)
+  
+  ran.gen.stable <- function(data, param) rstable( length(data), alpha=param$al,beta=1,gamma=param$gam,delta=param$del)
+  ### Statistic
+  statisticQ     <- function(data){
+    d   <-  data 
+    b   <-  stable.fit.mle.restricted(d, c(0,1,0,0), c(0,1,0,0))  ## fits a stable distribution with beta = 1
+    res <-  qstable( rev(1- (((1:floor(mom*(n/bu))))/((n/bu)*mom))),  alpha=  b[1], beta= b[2], 
+                               gamma = b[3], delta=b[4])
+    res <-  sign(res)*abs(res)^(1/alpha)
+    return(res) 
+  }
+  ### Bootstrap iterates
+  b   <- boot(sumaalpha, statistic = statisticQ, R = 100, sim="parametric",ran.gen=ran.gen.stable,
+              mle = list(al = bb[1],gam=bb[3],del=bb[4]) )
+  ## CI
+  mat <- NULL
+  for( j in 1:(n2*mom)){
+    b1  <- boot.ci(b, alpha = 0.05, type = "perc", index = j)
+    mat <- rbind( mat, c(b1$percent[4],qb[j],b1$percent[5]) )
+  }
+  return(mat)
+}
 ##### Computes index of spatial clustering
 i <- 1; j <- 3
 sample     <- na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
@@ -191,10 +390,7 @@ for(ind in 1:3){
 }
 }
 
-sample     <- sapply(1:n, function(k) max(sample0[k, ]) )
-ind        <- which(sample > records[floor(n*0.06) ] )
-moments    <- sapply(1:3, function(d) mean( (sample0[ind,d]/sample[ind])^alpha ) )
-print(moments)
+
 
 
 
