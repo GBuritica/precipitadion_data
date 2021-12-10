@@ -8,8 +8,8 @@ library(latex2exp)
 par(mfrow=c(3,3))
 bu0<- c(165,105,70)
 kp0 <- c(350,250,350)
-ville <- c("BREST", "LANVEOC", "QUIMPER", "BORMES", "LE.LUC", "HYERES", "NANCY", "METZ", "ROVILLE")
-region <- c("North West", "South", "North East")
+ville <- c("Brest", "Lanveoc", "Quimper", "Bormes", "Le Luc", "Hyeres", "Nancy", "Metz", "Roville")
+region <- c("northwest", "south", "northeast")
 for(i in 1:3){
    bu<- bu0[i]
    kp<- kp0[i]
@@ -74,11 +74,8 @@ for(i in 1:3){
   }
 }
 
-par(mfrow=c(2,3))
-
+par(mfrow=c(3,3))
 ylim0 <- xlim0 <- c(38,88)
-ylim0 <- xlim0 <- c(73,180)
-ylim0 <- xlim0 <- c(25,100)
 for(i in 3){
   
   bu<- bu0[i]
@@ -96,7 +93,7 @@ for(i in 3){
   ymax       <- length(sumaalpha)
   #mat        <- stableconfintervals(sumaalpha,alpha,ymax*1/min(moments))
   
-
+  
   ind        <- which(sample > records[floor(n*0.05) ] )
   moments    <- sapply(1:3, function(d) mean( (sample0[ind,d]/sample[ind])^alpha ) )
   print(moments)
@@ -128,7 +125,7 @@ for(i in 3){
     #points(quantiles4, quantiles, col = 1, pch=1, cex=1)
     #abline(0,1, lty=2, col = "grey")
     #mtext("univariate", cex=0.8)
-   
+    
     
     sample0     <- na.omit(cbind( pre[index[,j],((i-1)*3+2)] , pre[index[,j],((i-1)*3+3)] , pre[index[,j],((i-1)*3+4)] ) )
     sample0     <- na.omit(sample0); n      <- length(sample0[,1] )
@@ -137,26 +134,29 @@ for(i in 3){
     mom        <- moments[ind]
     mat        <- stableconfintervals(sumaalpha,alpha,mom)
     
-  
-   quantiles2 <- sapply(1:floor(ymax*mom), function(k) mat[k,2])
-   ymax2       <- length(quantiles2)
-   quantiles3 <-  rev(sorted[1:ymax2]) 
-   
-   plot(NA,NA,pch=1,cex=1, xlab = "observations",ylab=TeX('$1/\\widehat{\\alpha}^n$ - stable quantiles') , main = region[i], ylim =ylim0,xlim = xlim0 )
-   points(quantiles4, quantiles, col = "grey", pch=1, cex=1)
-   lines(quantiles4, mat0[,1], col="lightgrey",lty=3);lines(quantiles4, mat0[,3], col = "lightgrey",lty=3)
-   
-   #polygon( x=c( quantiles3[1:ymax2], rev(quantiles3[1:ymax2]) ), y=c( sapply(1:floor(ymax*mom), function(k) mat[k,1])
+    
+    quantiles2 <- sapply(1:floor(ymax*mom), function(k) mat[k,2])
+    ymax2       <- length(quantiles2)
+    quantiles3 <-  rev(sorted[1:ymax2]) 
+    
+    plot(NA,NA,pch=1,cex=1, xlab = "observations",ylab=TeX('$1/\\widehat{\\alpha}^n$ - stable quantiles') , main = region[i], ylim =ylim0,xlim = xlim0 )
+    points(quantiles4, quantiles, col = "grey", pch=1, cex=1)
+    lines(quantiles4, mat0[,1], col="grey",lty=3);lines(quantiles4, mat0[,3], col = "grey",lty=3)
+    
+    #polygon( x=c( quantiles3[1:ymax2], rev(quantiles3[1:ymax2]) ), y=c( sapply(1:floor(ymax*mom), function(k) mat[k,1])
     #                                                                  , rev(sapply(1:floor(ymax*mom), function(k)  mat[k,3] ))), density=20, col = "lightblue" , angle = 90)
-   points(quantiles3, quantiles2, type="p" ,cex=1, pch=1)
-   lines(quantiles3, mat[,1],lty=3);lines(quantiles3, mat[,3], lty=3)
-   
-   abline(0,1,lty=2, col = "grey")
-   mtext(ville[(i-1)*3 + ind], cex=0.8)
+    points(quantiles3, quantiles2, type="p" ,cex=1, pch=1)
+    lines(quantiles3, mat[,1],lty=3);lines(quantiles3, mat[,3], lty=3)
+    
+    abline(0,1,lty=2, col = "grey")
+    mtext(ville[(i-1)*3 + ind], cex=0.8)
   }
   
   
 }
+ylim0 <- xlim0 <- c(73,180)
+ylim0 <- xlim0 <- c(25,70)
+
 
 
 
@@ -198,7 +198,7 @@ for(i in 1){
   #mat        <- stableconfintervals(sumaalpha,alpha,ymax*1/min(moments))
   
   
-  ind        <- which(sample > records[floor(n*0.05) ] )
+  ind        <- which(sample > records[floor(n*0.06) ] )
   moments    <- sapply(1:3, function(d) mean( (sample0[ind,d]/sample[ind])^alpha ) )
   print(moments)
   
@@ -264,7 +264,7 @@ stableconfintervals <- function(sumaalpha,alpha,mom=1){
     return(res) 
   }
   ### Bootstrap iterates
-  b   <- boot(sumaalpha, statistic = statisticQ, R = 100, sim="parametric",ran.gen=ran.gen.stable,
+  b   <- boot(sumaalpha, statistic = statisticQ, R = 50, sim="parametric",ran.gen=ran.gen.stable,
               mle = list(al = bb[1],gam=bb[3],del=bb[4]) )
   ## CI
   mat <- NULL
