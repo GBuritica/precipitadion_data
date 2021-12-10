@@ -60,7 +60,7 @@ abline(h = quant, lty=2,col ="lightgrey")
 
 ## Extremogram 
 par(mfrow=c(1,3))
-title  <- c("North West","South", "North East")
+title  <- c("northwest","south", "northeast")
 title2 <- c("Brest", "Hyeres", "Metz")
 for(i in 1:3){
 j <- 3; 
