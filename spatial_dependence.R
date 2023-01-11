@@ -410,9 +410,6 @@ chart.Correlation( sample2, histogram=TRUE, pch=19)
 #draws <- rdirichlet(200, c(.3,.4,.2) )
 #chart.Correlation(draws[,1:2], histogram=TRUE, pch=19)
 
-
-
-
 i <- 1
 j <- 3 ## season
 n <- 20000
